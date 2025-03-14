@@ -12,6 +12,22 @@ class SmaCross(bt.Strategy):
         self.slow_sma = bt.indicators.SMA(
             self.data.close, period=self.params.slow_period)
         self.crossover = bt.indicators.CrossOver(self.fast_sma, self.slow_sma)
+        self.trades = []  # 매매 기록
+
+    def notify_order(self, order):
+        if order.status in [order.Completed]:
+            if order.isbuy():
+                self.trades.append({
+                    'date': self.datas[0].datetime.date(),
+                    'type': 'buy',
+                    'price': order.executed.price
+                })
+            else:
+                self.trades.append({
+                    'date': self.datas[0].datetime.date(),
+                    'type': 'sell',
+                    'price': order.executed.price
+                })
 
     def next(self):
         if not self.position:  # 포지션이 없을 때
